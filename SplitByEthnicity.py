@@ -3,16 +3,19 @@ import pandas as pd
 import logging
 import json
 from alive_progress import alive_bar
-from pypeepa.fileInteraction import (
+
+from pypeepa import (
+    initLogging,
     createDirectory,
     getFilePath,
     asyncListDir,
     asyncReadJSON,
+    loggingHandler,
 )
 
 
 async def splitByEthnicity(chunk, props):
-    for ind_ethnic_code, group in chunk.groupby("Ind_Ethnic_Code"):
+    for ind_ethnic_code, group in chunk.groupby(props["column_to_split"]):
         ind_output_dir = os.path.join(
             props["output_dir"],
             ind_ethnic_code,
@@ -49,14 +52,7 @@ async def splitByEthnicity(chunk, props):
 # variables:
 async def main():
     # Initialising logging
-    logging.basicConfig(
-        filename="ExceptionLogs-SplitByEthnicity.log",
-        format="%(asctime)s %(message)s",
-    )
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)  # Setting the threshold of logger to DEBUG
-    logger.debug("------------------App initialised!------------------")
-
+    logger = await initLogging("SplitByEthnicity")
     # User inputs
     input_dir = await getFilePath(
         "Enter the input files location: ",
@@ -64,22 +60,25 @@ async def main():
     output_dir = await getFilePath(
         "Enter the output location: ",
     )
-
-    chunk_size = 10000
     completed_files_name = "completedFiles.json"
-    delete_columns_file_name = "deleteColumns.json"
-    ordered_columns_file_name = "orderedColumns.json"
-    check_for_null = ["Email_Present_Flag", "Phone"]
+    # delete_columns_file_name = "deleteColumns.json"
+    # ordered_columns_file_name = "orderedColumns.json"
+    # check_for_null_file_name = "checkForNull.json"
+    chunk_size = 10000
 
-    # Reading completed files
+    # Reading completed files data
     completed_files = await asyncReadJSON(completed_files_name)
 
-    # Reading orderedColumns files from json file
-    ordered_columns = await asyncReadJSON(ordered_columns_file_name)
+    # Reading orderedColumns data from json file
+    # ordered_columns = await asyncReadJSON(ordered_columns_file_name)
 
-    # Reading deleted columns
-    delete_columns = await asyncReadJSON(delete_columns_file_name)
+    # Reading checkForNull data from json file
+    # check_for_null = await asyncReadJSON(check_for_null_file_name)
 
+    # Reading deleteColumns data from json file
+    # delete_columns = await asyncReadJSON(delete_columns_file_name)
+    app_config = await asyncReadJSON("appConfig.json")
+    print(app_config)
     # Get the list of input directory files.
     input_files = await asyncListDir(input_dir, "files")
 
@@ -92,9 +91,10 @@ async def main():
             process_config = {
                 "output_dir": output_dir,
                 "input_file": input_file,
-                "delete_columns": delete_columns,
-                "check_for_null": check_for_null,
-                "ordered_columns": ordered_columns,
+                "delete_columns": app_config["delete_columns"],
+                "check_for_null": app_config["check_for_null"],
+                "ordered_columns": app_config["ordered_columns"],
+                "column_to_split": app_config["column_to_split"],
             }
             try:
                 chunk_reader = pd.read_csv(
@@ -116,23 +116,20 @@ async def main():
 
                 # Output the file to output folder with same name.
                 output_path = os.path.join(output_dir, input_file)
-
-                print(f"Writing to file -> {output_path}")
-
-                logger.debug(f"Results for {input_file} -> {output_path}")
+                loggingHandler(logger, f"Results for {input_file} -> {output_path}")
 
                 # Add to the completed files list
                 completed_files.append(input_full_path)
                 with open(completed_files_name, "w+") as completed_output:
-                    logger.debug(f"Adding to completed files list -> {completed_files}")
+                    loggingHandler(logger, f"Saving to completed files list.")
                     json.dump(completed_files, completed_output)
 
             except Exception as err:
-                logger.exception("Exception Occurred:  " + str(err))
+                loggingHandler(logger, f"Exception Occurred: { str(err)} ")
         else:
-            skip_mssg = f"Skipping file as already complete -> {input_full_path}"
-            logger.debug(skip_mssg)
-            print(skip_mssg)
+            loggingHandler(
+                logger, f"Skipping file as already complete -> {input_full_path}"
+            )
 
 
 if __name__ == "__main__":

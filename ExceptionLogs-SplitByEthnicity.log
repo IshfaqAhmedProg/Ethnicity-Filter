@@ -1,8 +1,0 @@
-2023-08-21 01:04:43,249 ------------------SplitByEthnicity initialised!------------------
-2023-08-21 01:04:58,773 Exception Occurred: join() argument must be str, bytes, or os.PathLike object, not 'tuple' 
-2023-08-21 01:05:07,328 Exception Occurred: join() argument must be str, bytes, or os.PathLike object, not 'tuple' 
-2023-08-21 01:06:12,743 ------------------SplitByEthnicity initialised!------------------
-2023-08-21 01:08:24,606 Results for us_acuity_2017_1.csv -> C:\WorkHolder\python work\Ethnicity Filter\out\us_acuity_2017_1.csv
-2023-08-21 01:08:24,607 Adding to completed files list -> ['C:\\WorkHolder\\python work\\Ethnicity Filter\\test\\us_acuity_2017_1.csv']
-2023-08-21 01:10:40,191 Results for us_acuity_2017_2.csv -> C:\WorkHolder\python work\Ethnicity Filter\out\us_acuity_2017_2.csv
-2023-08-21 01:10:40,192 Adding to completed files list -> ['C:\\WorkHolder\\python work\\Ethnicity Filter\\test\\us_acuity_2017_1.csv', 'C:\\WorkHolder\\python work\\Ethnicity Filter\\test\\us_acuity_2017_2.csv']

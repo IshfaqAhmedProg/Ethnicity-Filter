@@ -61,24 +61,13 @@ async def main():
         "Enter the output location: ",
     )
     completed_files_name = "completedFiles.json"
-    # delete_columns_file_name = "deleteColumns.json"
-    # ordered_columns_file_name = "orderedColumns.json"
-    # check_for_null_file_name = "checkForNull.json"
+
     chunk_size = 10000
 
     # Reading completed files data
     completed_files = await asyncReadJSON(completed_files_name)
 
-    # Reading orderedColumns data from json file
-    # ordered_columns = await asyncReadJSON(ordered_columns_file_name)
-
-    # Reading checkForNull data from json file
-    # check_for_null = await asyncReadJSON(check_for_null_file_name)
-
-    # Reading deleteColumns data from json file
-    # delete_columns = await asyncReadJSON(delete_columns_file_name)
     app_config = await asyncReadJSON("appConfig.json")
-    print(app_config)
     # Get the list of input directory files.
     input_files = await asyncListDir(input_dir, "files")
 

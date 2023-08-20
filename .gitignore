@@ -2,4 +2,5 @@
 *.zip
 test
 out
-completedFiles.json
+*.log
+*.save.json

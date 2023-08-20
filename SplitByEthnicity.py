@@ -60,7 +60,7 @@ async def main():
     output_dir = await getFilePath(
         "Enter the output location: ",
     )
-    completed_files_name = "completedFiles.json"
+    completed_files_name = "completedFiles.save.json"
 
     chunk_size = 10000
 

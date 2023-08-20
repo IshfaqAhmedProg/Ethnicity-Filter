@@ -2,3 +2,4 @@
 *.zip
 test
 out
+completedFiles.json

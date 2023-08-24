@@ -1,6 +1,6 @@
 .venv
 *.zip
-test
+tests
 out
 *.log
 *.save.json

@@ -2,11 +2,16 @@ import os
 import glob
 import pandas as pd
 import logging
-from pypeepa.fileInteraction import getFilePath, asyncListDir, createDirectory
-from pypeepa.userInteraction import progressBarIterator
+from pypeepa import (
+    getFilePath,
+    initLogging,
+    listDir,
+    createDirectory,
+    progressBarIterator,
+)
 
 
-async def appendCSVFiles(directory_path, output_file_path, chunk_size=1000):
+def appendCSVFiles(directory_path, output_file_path, chunk_size=1000):
     # Find all CSV files in the given directory
     csv_files = glob.glob(os.path.join(directory_path, "*.csv"))
 
@@ -19,8 +24,9 @@ async def appendCSVFiles(directory_path, output_file_path, chunk_size=1000):
 
     # Loop through each CSV file and append its contents to the output file
     with open(output_file_path, "wb") as output_file:
-        for csv_file in progressBarIterator(csv_files, f"Appending "):
-            print(f"Processing {csv_file}")
+        for csv_file in progressBarIterator(
+            iterable=csv_files, description=f"Appending {csv_file}"
+        ):
             for chunk in pd.read_csv(csv_file, chunksize=chunk_size):
                 if not header_written:
                     chunk.to_csv(output_file, index=False, header=True, mode="wb")
@@ -32,32 +38,27 @@ async def appendCSVFiles(directory_path, output_file_path, chunk_size=1000):
 
 
 async def main():
+    app_name = "AppendCSVFiles"
     # Initialising logging
-    logging.basicConfig(
-        filename="ExceptionLogs-AppendCSVFiles.log",
-        format="%(asctime)s %(message)s",
-    )
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)  # Setting the threshold of logger to DEBUG
-    logger.debug("------------------App initialised!------------------")
+    logger = initLogging(app_name)
 
     # User inputs
-    input_dir = await getFilePath(
+    input_dir = getFilePath(
         "Enter the location of the folders containing the files to combine: ",
     )
-    output_dir = await getFilePath(
+    output_dir = getFilePath(
         "Enter the output location: ",
     )
     # Get the folders from the input_dir
-    input_dir_content = await asyncListDir(input_dir, "folders")
+    input_dir_content = listDir(input_dir, "folders")
 
     # Create outputdirectory if doesnt exist
-    await createDirectory(output_dir)
+    createDirectory(output_dir)
 
     for dir in input_dir_content:
         input_path = os.path.join(input_dir, dir)
         output_file_path = os.path.join(output_dir, f"{dir}.csv")
-        await appendCSVFiles(input_path, output_file_path, 10000)
+        appendCSVFiles(input_path, output_file_path, 10000)
         print(dir)
 
 

@@ -93,10 +93,9 @@ async def main():
 
     # Initialise progress saver
     progress = ProgressSaver(app_name)
-    saved_data = progress.initialiseJSONSaver()
 
     # If saved_data length more than 0 ask users if they want to continue previous process
-    if len(saved_data) > 0:
+    if len(progress.saved_data) > 0:
         continue_from_before = askYNQuestion("Continue from before?(y/n)")
         if not continue_from_before:
             progress.resetSavedData(logger)

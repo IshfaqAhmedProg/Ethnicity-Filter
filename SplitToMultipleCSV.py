@@ -80,10 +80,9 @@ async def main():
 
     chunk_size = 100000
     progress = ProgressSaver(app_name)
-    saved_data = progress.initialiseJSONSaver()
 
     app_config = readJSON(f"appConfig-{app_name}.json")
-    if len(saved_data) > 0:
+    if len(progress.saved_data) > 0:
         continue_from_before = askYNQuestion("Continue from before?(y/n)")
         if not continue_from_before:
             progress.resetSavedData(logger)

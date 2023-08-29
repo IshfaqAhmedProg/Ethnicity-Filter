@@ -75,10 +75,9 @@ async def main():
     valid_countries = ["US", "USA"]  # List of valid country values
 
     progress = ProgressSaver(app_name)
-    saved_data = progress.initialiseJSONSaver()
 
     # If saved_data length more than 0 ask users if they want to continue previous process
-    if len(saved_data) > 0:
+    if len(progress.saved_data) > 0:
         continue_from_before = askYNQuestion("Continue from before?(y/n)")
         if not continue_from_before:
             progress.resetSavedData(logger)
@@ -119,7 +118,7 @@ async def main():
                         )
                     if filter_countries:
                         countries_index = selectOptionQuestion(
-                            question=f"Enter the index of the column containing the country.",
+                            question=f"Enter the index of the column to check the countries.",
                             min=1,
                             max=len(all_columns),
                         )

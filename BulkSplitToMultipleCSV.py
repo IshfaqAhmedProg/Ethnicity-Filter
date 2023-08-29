@@ -53,11 +53,12 @@ async def main():
     )
     chunk_size = 100000
     progress = ProgressSaver(app_name)
-    saved_data = progress.initialiseJSONSaver()
 
-    common_vals = read_csv(common_vals_path, low_memory=False).to_dict(orient="list")
+    common_vals = read_csv(
+        common_vals_path, low_memory=False, encoding_errors="ignore"
+    ).to_dict(orient="list")
     # If saved_data length more than 0 ask users if they want to continue previous process
-    if len(saved_data) > 0:
+    if len(progress.saved_data) > 0:
         continue_from_before = askYNQuestion("Continue from before?(y/n)")
         if not continue_from_before:
             progress.resetSavedData(logger)
@@ -78,18 +79,20 @@ async def main():
             try:
                 if not file_columns_same or first_file:
                     # Get the first line for header names
-                    columns = read_csv(input_full_path, nrows=1).columns
-                    printArray(columns)
+                    all_columns = read_csv(
+                        input_full_path, nrows=1, encoding_errors="ignore"
+                    ).columns
+                    printArray(all_columns)
                     column_index = selectOptionQuestion(
                         question=f"Enter the index of the column to filter for the file {input_file}",
                         min=1,
-                        max=len(columns),
+                        max=len(all_columns),
                     )
                 process_config = {
                     "output_dir": output_dir,
                     "input_file": input_file,
                     "common_vals": common_vals,
-                    "column_name": columns[int(column_index) - 1],
+                    "column_name": all_columns[int(column_index) - 1],
                     "logger": logger,
                 }
                 processCSVInChunks(

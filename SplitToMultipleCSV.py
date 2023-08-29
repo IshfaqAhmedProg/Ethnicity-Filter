@@ -1,7 +1,6 @@
 import os
 import time
-from pandas import DataFrame, read_csv
-from alive_progress import alive_bar
+from pandas import DataFrame
 from pypeepa import (
     initLogging,
     createDirectory,

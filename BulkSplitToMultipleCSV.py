@@ -64,32 +64,34 @@ async def main():
     # Get the list of input directory files.
     input_files = listDir(input_dir, get="files")
 
-    print("Files detected in input folder:", len(input_files))
-
+    file_columns_same = askYNQuestion(
+        "Are all the column names the same for all the files in the input dir?(y/n)"
+    )
     # Start the process on each input directory files
     tick = time.time()
-
+    first_file = True
     for input_file in input_files:
         task_tick = time.time()
         input_full_path = os.path.join(input_dir, input_file)
         # Check saved_data for file
         if input_full_path not in progress.saved_data:
-            columns = read_csv(input_full_path, nrows=1).columns
-            printArray(columns)
-            column_index = selectOptionQuestion(
-                question=f"Enter the index of the column to filter for the file {input_file}",
-                min=1,
-                max=len(columns),
-            )
-            process_config = {
-                "output_dir": output_dir,
-                "input_file": input_file,
-                "common_vals": common_vals,
-                "column_name": columns[int(column_index) - 1],
-                "logger": logger,
-            }
-
             try:
+                if not file_columns_same or first_file:
+                    # Get the first line for header names
+                    columns = read_csv(input_full_path, nrows=1).columns
+                    printArray(columns)
+                    column_index = selectOptionQuestion(
+                        question=f"Enter the index of the column to filter for the file {input_file}",
+                        min=1,
+                        max=len(columns),
+                    )
+                process_config = {
+                    "output_dir": output_dir,
+                    "input_file": input_file,
+                    "common_vals": common_vals,
+                    "column_name": columns[int(column_index) - 1],
+                    "logger": logger,
+                }
                 processCSVInChunks(
                     csv_file=input_full_path,
                     process_function=split_and_save_data,
@@ -99,7 +101,7 @@ async def main():
 
                 # Add to the completed files list
                 progress.saveToJSON(input_full_path, input_file, logger)
-
+                first_file = False
             except Exception as err:
                 loggingHandler(logger, f"Exception Occurred: { str(err)} ")
         else:

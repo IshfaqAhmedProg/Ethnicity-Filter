@@ -4,3 +4,5 @@ tests
 out
 *.log
 *.save.json
+*_logs
+*_saves

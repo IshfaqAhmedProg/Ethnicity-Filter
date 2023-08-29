@@ -1,17 +1,23 @@
+"""
+    Appends csv files in a directory and outputs it to a csv file with the same name as the directory
+"""
 import os
 import glob
 import pandas as pd
-import logging
 from pypeepa import (
     getFilePath,
     initLogging,
     listDir,
     createDirectory,
     progressBarIterator,
+    loggingHandler,
 )
 
 
-def appendCSVFiles(directory_path, output_file_path, chunk_size=1000):
+def appendCSVFiles(directory_path, output_file_path, logger, chunk_size=1000):
+    """
+    Appends csv files in a directory and outputs it to a csv file with the same name as the directory
+    """
     # Find all CSV files in the given directory
     csv_files = glob.glob(os.path.join(directory_path, "*.csv"))
 
@@ -34,7 +40,7 @@ def appendCSVFiles(directory_path, output_file_path, chunk_size=1000):
                 else:
                     chunk.to_csv(output_file, index=False, header=False, mode="ab")
 
-    print(f"Combined data saved to '{output_file_path}'.")
+    loggingHandler(logger, f"Combined data saved to '{output_file_path}'.")
 
 
 async def main():
@@ -55,11 +61,10 @@ async def main():
     # Create outputdirectory if doesnt exist
     createDirectory(output_dir)
 
-    for dir in input_dir_content:
-        input_path = os.path.join(input_dir, dir)
-        output_file_path = os.path.join(output_dir, f"{dir}.csv")
-        appendCSVFiles(input_path, output_file_path, 10000)
-        print(dir)
+    for directory in input_dir_content:
+        input_path = os.path.join(input_dir, directory)
+        output_file_path = os.path.join(output_dir, f"{directory}.csv")
+        appendCSVFiles(input_path, output_file_path, logger, 10000)
 
 
 if __name__ == "__main__":

@@ -69,7 +69,7 @@ def splitByColumn(df: DataFrame, props):
 async def main():
     app_name = "SplitToMultipleCSV"
     # Initialising logging
-    logger = initLogging("SplitByEthnicity")
+    logger = initLogging(app_name)
     # User inputs
     input_dir = getFilePath(
         "Enter the input files location: ",
@@ -79,10 +79,10 @@ async def main():
     )
 
     chunk_size = 100000
-    progress = ProgressSaver(f"completedFiles-{app_name}")
+    progress = ProgressSaver(app_name)
     saved_data = progress.initialiseJSONSaver()
 
-    app_config = readJSON(f"appConfig{app_name}.json")
+    app_config = readJSON(f"appConfig-{app_name}.json")
     if len(saved_data) > 0:
         continue_from_before = askYNQuestion("Continue from before?(y/n)")
         if not continue_from_before:

@@ -92,7 +92,7 @@ async def main():
     chunk_size = 100000
 
     # Initialise progress saver
-    progress = ProgressSaver(f"completedFiles-{app_name}")
+    progress = ProgressSaver(app_name)
     saved_data = progress.initialiseJSONSaver()
 
     # If saved_data length more than 0 ask users if they want to continue previous process

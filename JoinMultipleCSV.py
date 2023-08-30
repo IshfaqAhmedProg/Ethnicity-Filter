@@ -41,7 +41,7 @@ def askHeaderForMultipleCSV(csv_list: List[str], csv_dir: str) -> List[Tuple[str
     return files_and_header
 
 
-def removeNullFromColumn(df, check_for_null_columns):
+def removeNullFromColumn(df: DataFrame, check_for_null_columns: List[str]):
     """Remove any null values in the column specified, if more than one column is specified then if all are null only
     remove those."""
     for col in check_for_null_columns:
@@ -50,7 +50,14 @@ def removeNullFromColumn(df, check_for_null_columns):
     return df
 
 
-def innerJoinCSVFiles(dataframe: DataFrame, config):
+def dropColumns(df: DataFrame, delete_columns: List[str]):
+    """Remove multiple columns from a dataframe"""
+    columns_to_drop = [col for col in delete_columns if col in df.columns]
+    df.drop(columns=columns_to_drop, errors="ignore")
+    return df
+
+
+def innerJoinCSVFiles(chunk: DataFrame, config):
     """
     Perform left join on a DataFrame with multiple CSV files, removing duplicates from right CSVs.
 
@@ -66,36 +73,35 @@ def innerJoinCSVFiles(dataframe: DataFrame, config):
 
     @return:pd.DataFrame: DataFrame with all columns from right CSVs joined based on the specified configurations.
     """
-    left_df = dataframe.copy()
+    left_df = chunk.copy()
     left_col = config["left_col"]
     left_df[left_col] = left_df[left_col].astype(str)
-    print("before processing:left: \n", left_df.head())
+
     for right_file in config["right_files_and_headers"]:
-        # Load the right CSV file into a DataFrame
         right_df = read_csv(right_file[0], low_memory=False, encoding_errors="ignore")
 
         right_col = right_file[1]
-        print(
-            f"before dropping dupes and removing null:right:{right_file[0]} \n",
-            right_df.head(),
-        )
-        # Remove null values from right_df
         right_df = removeNullFromColumn(right_df, [right_col])
-
-        # Remove duplicates keeping the first occurrence in the right DataFrame
         right_df[right_col] = right_df[right_col].astype(str)
         right_df.drop_duplicates(subset=right_col, keep="first", inplace=True)
 
-        print("after dropping dupes and removing null:right: \n", right_df.head())
+        # print(
+        #     "Shapes before merge - left_df:",
+        #     left_df.info(),
+        #     "right_df:",
+        #     right_df.info(),
+        # )
 
-        # Perform the left join
-        left_df = left_df.merge(
+        merged_df = left_df.merge(
             right_df,
-            how="inner",
+            how="left",
             left_on=left_col,
             right_on=right_col,
         )
-    print("after processing:left: \n", left_df.head())
+
+        left_df = merged_df.drop(columns=[right_col])
+        # print("Shape after merge and drop:", left_df.info())
+
     return left_df
 
 
@@ -173,6 +179,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
+    main()

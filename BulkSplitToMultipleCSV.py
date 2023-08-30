@@ -56,7 +56,10 @@ async def main():
     progress = ProgressSaver(app_name)
 
     common_vals = read_csv(
-        common_vals_path, low_memory=False, encoding_errors="ignore"
+        common_vals_path,
+        low_memory=False,
+        encoding_errors="ignore",
+        on_bad_lines="skip",
     ).to_dict(orient="list")
     # If saved_data length more than 0 ask users if they want to continue previous process
     if len(progress.saved_data) > 0:
@@ -81,7 +84,10 @@ async def main():
                 if not file_columns_same or first_file:
                     # Get the first line for header names
                     all_columns = read_csv(
-                        input_full_path, nrows=1, encoding_errors="ignore"
+                        input_full_path,
+                        nrows=1,
+                        encoding_errors="ignore",
+                        on_bad_lines="skip",
                     ).columns
                     printArray(all_columns)
                     column_index = selectOptionQuestion(

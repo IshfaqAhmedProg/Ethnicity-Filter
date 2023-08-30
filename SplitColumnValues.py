@@ -1,4 +1,6 @@
 import os
+from traceback import format_exc
+
 from pandas import read_csv
 from pypeepa import (
     getFilePath,
@@ -175,7 +177,12 @@ async def main():
                 progress.saveToJSON(input_full_path, input_full_path, logger)
                 count += 1
             except Exception as err:
-                loggingHandler(logger, f"Exception Occurred:  {str(err)}")
+                traceback_info = format_exc()
+                # Log the exception message along with the traceback information
+                log_message = (
+                    f"Exception occurred: {str(err)}\nTraceback:\n{traceback_info}"
+                )
+                loggingHandler(logger, log_message)
         else:
             loggingHandler(
                 logger, f"Skipping file as already complete -> {input_full_path}"

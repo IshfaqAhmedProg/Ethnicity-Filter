@@ -1,5 +1,6 @@
 import os
 import time
+from typing import List
 from traceback import format_exc
 from pandas import DataFrame
 from pypeepa import (
@@ -15,60 +16,20 @@ from pypeepa import (
 )
 
 
-def dropColumns(df, delete_columns):
+def dropColumns(df: DataFrame, delete_columns: List[str]):
     """Remove multiple columns from a dataframe"""
     columns_to_drop = [col for col in delete_columns if col in df.columns]
     df.drop(columns=columns_to_drop, errors="ignore")
     return df
 
 
-def reorderColumns(df, ordered_columns):
-    """Change the order of the columns according to a provided list of columns"""
-    return df.reindex(columns=ordered_columns, fill_value="")
-
-
-def removeNullFromColumn(df, check_for_null_columns):
-    """Remove any null values in the column specified, if more than one column is specified then if all are null only
-    remove those."""
-    for col in check_for_null_columns:
-        if col in df.columns:
-            df = df[df[col].notnull()]
-    return df
-
-
-def splitByColumn(df: DataFrame, props):
-    for ind_ethnic_code, group in df.groupby(props["column_to_split"]):
-        ind_output_dir = os.path.join(
-            props["output_dir"],
-            str(ind_ethnic_code),
-        )
-        # Create output folder if it doesn't exist
-        createDirectory(ind_output_dir)
-        output_file = os.path.join(
-            ind_output_dir,
-            props["input_file"],
-        )
-
-        # Remove specified columns from the group
-
-        group_dropped = dropColumns(group, props["delete_columns"])
-
-        # Filter rows based on non-empty values in specified columns
-        group_annulled = removeNullFromColumn(group_dropped, props["check_for_null"])
-
-        # Reorder columns based on a predefined order
-        group_filtered = reorderColumns(group_annulled, props["ordered_columns"])
-
-        # Output the file to its destination
-        group_filtered.to_csv(
-            output_file, mode="a", header=not os.path.exists(output_file), index=False
-        )
-
-
 # Main function
 # variables:
 async def main():
-    app_name = "SplitToMultipleCSV"
+    app_name = "RemoveColumns"
+    print(
+        f"Before running this make sure you have a .json file with all the\ncolumn names listed on an array.\n  eg:- ['column1','column2']"
+    )
     # Initialising logging
     logger = initLogging(app_name)
     # User inputs
@@ -78,11 +39,14 @@ async def main():
     output_dir = getFilePath(
         "Enter the output location: ",
     )
-
+    createDirectory(output_dir)
+    del_cols_path = getFilePath(
+        "Enter the .json file containing the columns to delete: ", (".json"), False
+    )
     chunk_size = 100000
     progress = ProgressSaver(app_name)
 
-    app_config = readJSON(f"appConfig-{app_name}.json")
+    del_cols = readJSON(del_cols_path)
     if len(progress.saved_data) > 0:
         continue_from_before = askYNQuestion("Continue from before?(y/n)")
         if not continue_from_before:
@@ -90,27 +54,26 @@ async def main():
     # Get the list of input directory files.
     input_files = listDir(input_dir, get="files")
 
-    print("Files detected in input folder:", len(input_files))
-
     # Start the process on each input directory files
     for input_file in input_files:
         task_tick = time.time()
         input_full_path = os.path.join(input_dir, input_file)
         # Check saved_data for file
         if input_full_path not in progress.saved_data:
-            process_config = {
-                "output_dir": output_dir,
-                "input_file": input_file,
-                "delete_columns": app_config["delete_columns"],
-                "check_for_null": app_config["check_for_null"],
-                "ordered_columns": app_config["ordered_columns"],
-                "column_to_split": app_config["column_to_split"],
-            }
             try:
-                processCSVInChunks(
-                    input_full_path, splitByColumn, process_config, chunk_size
+                df = processCSVInChunks(
+                    input_full_path,
+                    dropColumns,
+                    del_cols,
+                    chunk_size,
                 )
-
+                # Output the file to output folder with same name.
+                output_path = os.path.join(output_dir, input_file)
+                df.to_csv(output_path, index=False)
+                loggingHandler(
+                    logger,
+                    f"Results for {input_file}, Time taken:{time.time()-task_tick}s -> {output_path}",
+                )
                 # Add to the completed files list
                 progress.saveToJSON(input_full_path, input_file, logger)
 

@@ -63,7 +63,7 @@ async def main():
         "Enter the output location: ",
     )
     createDirectory(output_dir)
-    reference_csv_file_path = getFilePath(
+    reference_json_file_path = getFilePath(
         "Enter the file containing the common names: ", (".json"), False
     )
     chunk_size = 100000
@@ -84,7 +84,7 @@ async def main():
     # Get the list of input directory files.
     input_files = listDir(input_dir, "files")
 
-    common_names = readJSON(reference_csv_file_path)
+    common_names = readJSON(reference_json_file_path)
 
     filter_age = askYNQuestion("Do you want to filter age?(y/n)")
     filter_countries = askYNQuestion("Do you want to filter country?(y/n)")

@@ -13,32 +13,8 @@ from pypeepa import (
     listDir,
     loggingHandler,
     processCSVInChunks,
-    selectOptionQuestion,
-    printArray,
+    askHeaderForMultipleCSV,
 )
-
-
-def askHeaderForMultipleCSV(csv_list: List[str], csv_dir: str) -> List[Tuple[str, str]]:
-    files_and_header = []
-    prev_cols = []
-    col_index = None
-    for csv_file in csv_list:
-        csv_full_path = os.path.join(csv_dir, csv_file)
-        current_columns = read_csv(
-            csv_full_path, nrows=1, encoding_errors="ignore", encoding="cp437"
-        ).columns
-        if not numpy.array_equal(numpy.array(prev_cols), numpy.array(current_columns)):
-            printArray(current_columns)
-            col_index = selectOptionQuestion(
-                question=f"Enter the index of the column you want to match.",
-                min=1,
-                max=len(current_columns),
-            )
-            prev_cols = current_columns
-        col_name = current_columns[col_index - 1]
-        files_and_header.append((csv_full_path, col_name))
-
-    return files_and_header
 
 
 def removeNullFromColumn(df: DataFrame, check_for_null_columns: List[str]):
@@ -107,6 +83,9 @@ def innerJoinCSVFiles(chunk: DataFrame, config):
 
 def main():
     app_name = "JoinMultipleCSV"
+    print(
+        "Before running this, make sure you have the files you want to join to (left) in one folder.\nAnd the files you want to join with (right) in another folder."
+    )
     logger = initLogging(app_name)
     # User inputs
     left_dir = getFilePath(

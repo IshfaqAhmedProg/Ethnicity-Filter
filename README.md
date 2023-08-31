@@ -1,8 +1,7 @@
 # Large Dataset Tools
 
-   Tools created in python to manipulate and analyse large datasets.
-
 - [Large Dataset Tools](#large-dataset-tools)
+  - [Introduction](#introduction)
   - [Split CSV](#split-csv)
   - [Split To Multiple Columns](#split-to-multiple-columns)
   - [Join Multiple CSV](#join-multiple-csv)
@@ -10,6 +9,14 @@
   - [Remove Columns](#remove-columns)
   - [Remove Null Values](#remove-null-values)
   - [Reorder Columns](#reorder-columns)
+
+## Introduction
+
+   Tools created in python to manipulate and analyse large datasets. 
+   * Make sure you have python 3.11+ installed.
+   * To start using clone the repo and run **Update.bat** file.
+   * To run any of the script open cmd or powershell and run "`python [name of the script].py`"
+   * To run parallel tasks open a bash terminal instead of cmd or powershell and run "`python [name of the script 1].py & python [name of the script 2].py  &`", add as many processes as you want to run, just make sure to add the last "`&`".
 
 ## Split CSV
 
@@ -43,7 +50,7 @@
       
       **Requires a reference file which has values to match*.
 
-      Splits to multiple folders based on the column name in the reference file. eg:- if the reference file looks like this, and the input file and selected column is the same as the example in `Column Values`, then the output will be: "output_dir/**spanishNames**/input1.csv", "output_dir/**englishNames**/input1.csv"
+      Splits to multiple folders based on the column name in the reference file. eg:- if the reference file looks like this, and the input file and selected column is the same as the example in **Column Values**, then the output will be: "output_dir/**spanishNames**/input1.csv", "output_dir/**englishNames**/input1.csv"
 
             Inputs:
                reference file:

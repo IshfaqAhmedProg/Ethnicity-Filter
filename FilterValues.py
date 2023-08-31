@@ -1,4 +1,9 @@
 import os
+import time
+from dateparser import parse
+from datetime import datetime
+from traceback import format_exc
+from pandas import read_csv, DataFrame
 from pypeepa import (
     ProgressSaver,
     getFilePath,
@@ -12,47 +17,53 @@ from pypeepa import (
     printArray,
     askSelectOptionQuestion,
 )
-from datetime import datetime
-import time
-from pandas import read_csv, DataFrame
 
 
-def calculate_age(dob_parts, current_year):
-    try:
-        birth_year = int(dob_parts[0])
-        age = current_year - birth_year
+def calculate_age(date_str, current_year):
+    dob = parse(date_str)
+    if dob:
+        age = current_year - dob.year
         return age
-    except ValueError:
-        return -1  # Return a default value for NaN or invalid values
+    return -1  # Return a default value for NaN or invalid values
 
 
-def filterDataframeByAgeCountryAndNames(chunk: DataFrame, process_config: dict):
-    # "current_year":
-    # "common_values":
-    # "dob_column":
-    # "age_value":
-    # "common_value_header":
-    # "countries_header":
-    # "valid_countries":
+def filterDataFrameByAgeAndCommonValues(chunk: DataFrame, process_config: dict):
+    """
+    Filter a DataFrame based on age and common values.
+    This function filters a given DataFrame based on the specified age and common values.
+
+    @param:`chunk`: The DataFrame to be filtered.
+    @param:`process_config`: Dictionary containing configurations for filtering.\n
+            @key:`current_year` (int or None): Current year used for age calculation.\n
+            @key:`dob_column` (str or None): Column name containing date of birth.\n
+            @key:`age_value` (int or None): Minimum age for filtering.\n
+            @key:`common_values` (list or None): List of common values to filter by.\n
+            @key:`common_value_header` (str or None): Column header for common values.\n
+
+    @return:
+        Filtered DataFrame containing rows that satisfy the age and common value criteria.
+    """
     (
         current_year,
-        common_values,
         dob_column,
         age_value,
+        common_values,
         common_value_header,
     ) = process_config.values()
-
     # Setting all to true so that and logic can work so if multiple filters are chosen when both are satisfied then keep those only
     value_matches = filter_age = True
     # Filter age
     if dob_column != None:
-        dob_parts = chunk[dob_column].str.split("/", expand=True)
-        chunk["age"] = dob_parts.apply(calculate_age, args=(current_year,), axis=1)
-    filter_age = chunk["age"] > age_value
+        chunk[dob_column] = chunk[dob_column].astype(
+            str
+        )  # Ensure the column is of string type
+        chunk["age"] = chunk[dob_column].apply(calculate_age, args=(current_year,))
+        filter_age = chunk["age"] > age_value
 
     # Filter values
-    common_values_lower = [name.lower() for name in common_values]
-    value_matches = chunk[common_value_header].str.lower().isin(common_values_lower)
+    if common_value_header != None:
+        common_values_lower = [name.lower() for name in common_values]
+        value_matches = chunk[common_value_header].str.lower().isin(common_values_lower)
 
     filtered_df = chunk[filter_age & value_matches]
 
@@ -60,7 +71,7 @@ def filterDataframeByAgeCountryAndNames(chunk: DataFrame, process_config: dict):
 
 
 async def main():
-    app_name = "FilterACN"
+    app_name = "FilterValues"
     logger = initLogging(app_name)
     # User inputs
     input_dir = getFilePath(
@@ -91,7 +102,7 @@ async def main():
     for input_file in input_files:
         task_tick = time.time()
         input_full_path = os.path.join(input_dir, input_file)
-        if input_full_path not in progress.saved_data:
+        if input_full_path not in progress.saved_data and (filter_values or filter_age):
             try:
                 if not file_columns_same or first_file:
                     # Get the first line for header names
@@ -125,17 +136,19 @@ async def main():
                         common_values = readJSON(reference_json_file_path)
 
                 process_config = {
-                    "current_year": current_year,
-                    "common_values": common_values,
-                    "dob_column": None if filter_age else all_columns[dob_index - 1],
-                    "age_value": age,
+                    "current_year": None if not filter_age else current_year,
+                    "dob_column": None
+                    if not filter_age
+                    else all_columns[dob_index - 1],
+                    "age_value": None if not filter_age else age,
+                    "common_values": None if not filter_values else common_values,
                     "common_value_header": None
-                    if filter_values
+                    if not filter_values
                     else all_columns[names_index - 1],
                 }
                 df = processCSVInChunks(
                     input_full_path,
-                    filterDataframeByAgeCountryAndNames,
+                    filterDataFrameByAgeAndCommonValues,
                     process_config,
                     chunk_size,
                 )
@@ -152,7 +165,11 @@ async def main():
                 first_file = False
 
             except Exception as err:
-                loggingHandler(logger, f"Exception Occurred:  {str(err)}")
+                traceback = format_exc()
+                loggingHandler(
+                    logger,
+                    f"Exception occurred: {str(err)}\n{traceback}",
+                )
 
         else:
             loggingHandler(

@@ -76,8 +76,48 @@
 ### 3. JoinMultipleCSV
 
    Join multiple CSV files based on the column provided, Before running this, make sure you have the files you want to join to (***left***) in one folder, and the files you want to join with (***right***) in another folder.
-   The ***left*** will be kept as is and only the new columns from the ***right*** will be added to it. You can have multiple ***left***  and ***right*** files, with completely different column headers.   
+   The ***left*** will be kept as is and only the new columns from the ***right*** will be added to it. You can have multiple ***left***  and ***right*** files, with completely different column headers.
 
+   eg:- If your left and right file looks like this,
+
+            Inputs:
+               left1.csv  
+               | name  | address | email           |
+               | ----- | ------- | --------------- |
+               | dave  | 1234    | dave@gmail.com  |
+               | john  | 1234    | john@gmail.com  |
+               | peter | 1234    | peter@gmail.com |
+               | diane | 1234    | diane@gmail.com |
+               
+               ____________________________________________
+               
+               right1.csv
+               | phoneNumber | e-mail          |
+               | ----------- | --------------- |
+               | 5684        | dave@gmail.com* |
+               | 8654        | baz@gmail.com   |
+               | 8654        | bar@gmail.com   |
+               | 8654        | bo@gmail.com    |
+               | 8654        | baz@gmail.com   |
+
+               right2.csv
+               | Fax   | Email           |
+               | ----- | --------------- |
+               | 8975  | dave@gmail.com* |
+               | 87655 | john@gmail.com* |
+               | 5486  | 545             |
+               | 4851  | fum@gmail.com   |
+
+            Outputs:
+               output_dir/left1.csv
+               | name  | address | email           | Fax     | phoneNumber |
+               | ----- | ------- | --------------- | ------- | ----------- |
+               | dave  | 1234    | dave@gmail.com  | 8975.0  | 5684        |
+               | john  | 1234    | john@gmail.com  | 87655.0 |             |
+               | peter | 1234    | peter@gmail.com |         |             |
+               | diane | 1234    | diane@gmail.com |         |             |
+
+               
 ### 4. FilterACN
 
    Filter out the age country or names from a csv file ***WIP***

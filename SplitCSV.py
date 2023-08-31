@@ -11,7 +11,7 @@ from pypeepa import (
     loggingHandler,
     askYNQuestion,
     processCSVInChunks,
-    selectOptionQuestion,
+    askSelectOptionQuestion,
     askHeaderForMultipleCSV,
     ProgressSaver,
 )
@@ -81,7 +81,7 @@ async def main():
     ]
     for idx, types in enumerate(split_types):
         print(f"\n[{idx+1}]=> {types['name']} :\n    {types['desc']}")
-    split_type_index = selectOptionQuestion(
+    split_type_index = askSelectOptionQuestion(
         "\nSelect the type of split you want to do on the input files",
         1,
         len(split_types),

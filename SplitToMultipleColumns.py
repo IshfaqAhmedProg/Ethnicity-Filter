@@ -11,7 +11,7 @@ from pypeepa import (
     createDirectory,
     askYNQuestion,
     printArray,
-    selectOptionQuestion,
+    askSelectOptionQuestion,
     # concurrentFutures, # For multiprocessing
     ProgressSaver,
 )
@@ -142,13 +142,13 @@ async def main():
                     address_index = names_index = None
                     printArray(columns)
                     if split_names:
-                        names_index = selectOptionQuestion(
+                        names_index = askSelectOptionQuestion(
                             question=f"Enter the index of the column containing the names.",
                             min=1,
                             max=len(columns),
                         )
                     if split_address:
-                        address_index = selectOptionQuestion(
+                        address_index = askSelectOptionQuestion(
                             question=f"Enter the index of the column containing the addresses.",
                             min=1,
                             max=len(columns),

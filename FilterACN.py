@@ -10,11 +10,11 @@ from pypeepa import (
     readJSON,
     listDir,
     printArray,
-    selectOptionQuestion,
+    askSelectOptionQuestion,
 )
 from datetime import datetime
 import time
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 
 
 def calculate_age(dob_parts, current_year):
@@ -26,28 +26,35 @@ def calculate_age(dob_parts, current_year):
         return -1  # Return a default value for NaN or invalid values
 
 
-def filterDataframeByAgeCountryAndNames(chunk, process_config):
-    # Specify date format and use 'errors' parameter to handle invalid dates
-    dob_parts = chunk[process_config["dob_column"]].str.split("/", expand=True)
-    chunk["age"] = dob_parts.apply(
-        calculate_age, args=(process_config["current_year"],), axis=1
-    )
+def filterDataframeByAgeCountryAndNames(chunk: DataFrame, process_config: dict):
+    # "current_year":
+    # "common_values":
+    # "dob_column":
+    # "age_value":
+    # "common_value_header":
+    # "countries_header":
+    # "valid_countries":
+    (
+        current_year,
+        common_values,
+        dob_column,
+        age_value,
+        common_value_header,
+    ) = process_config.values()
 
-    # Perform a loose name matching
-    common_names_lower = [name.lower() for name in process_config["common_names"]]
-    name_matches = (
-        chunk[process_config["names_header"]].str.lower().isin(common_names_lower)
-    )
+    # Setting all to true so that and logic can work so if multiple filters are chosen when both are satisfied then keep those only
+    value_matches = filter_age = True
+    # Filter age
+    if dob_column != None:
+        dob_parts = chunk[dob_column].str.split("/", expand=True)
+        chunk["age"] = dob_parts.apply(calculate_age, args=(current_year,), axis=1)
+    filter_age = chunk["age"] > age_value
 
-    filtered_df = chunk[
-        (
-            chunk[process_config["countries_header"]].isin(
-                process_config["valid_countries"]
-            )
-        )
-        & (chunk["age"] > process_config["age_value"])
-        & name_matches
-    ]
+    # Filter values
+    common_values_lower = [name.lower() for name in common_values]
+    value_matches = chunk[common_value_header].str.lower().isin(common_values_lower)
+
+    filtered_df = chunk[filter_age & value_matches]
 
     return filtered_df
 
@@ -63,32 +70,18 @@ async def main():
         "Enter the output location: ",
     )
     createDirectory(output_dir)
-    reference_json_file_path = getFilePath(
-        "Enter the file containing the common names: ", (".json"), False
-    )
-    chunk_size = 100000
-    # Example usage
-    current_year = datetime.now().year
 
-    # Load common male names from the reference CSV
-    # Read original CSV file into a pandas DataFrame in chunks
-    valid_countries = ["US", "USA"]  # List of valid country values
+    chunk_size = 100000
 
     progress = ProgressSaver(app_name)
 
     # If saved_data length more than 0 ask users if they want to continue previous process
-    if len(progress.saved_data) > 0:
-        continue_from_before = askYNQuestion("Continue from before?(y/n)")
-        if not continue_from_before:
-            progress.resetSavedData(logger)
+    progress.askToContinue(logger)
     # Get the list of input directory files.
     input_files = listDir(input_dir, "files")
 
-    common_names = readJSON(reference_json_file_path)
-
     filter_age = askYNQuestion("Do you want to filter age?(y/n)")
-    filter_countries = askYNQuestion("Do you want to filter country?(y/n)")
-    filter_names = askYNQuestion("Do you want to filter names?(y/n)")
+    filter_values = askYNQuestion("Do you want to filter names?(y/n)")
     file_columns_same = askYNQuestion(
         "Are all the column names the same for all the files in the input dir?(y/n)"
     )
@@ -103,44 +96,42 @@ async def main():
                 if not file_columns_same or first_file:
                     # Get the first line for header names
                     all_columns = read_csv(input_full_path, nrows=1).columns
-                    dob_index = countries_index = names_index = None
+                    dob_index = names_index = None
                     printArray(all_columns)
                     if filter_age:
-                        dob_index = selectOptionQuestion(
+                        dob_index = askSelectOptionQuestion(
                             question=f"Enter the index of the column containing the date of births.",
                             min=1,
                             max=len(all_columns),
                         )
-                        age = selectOptionQuestion(
-                            question=f"Enter the age to filter, will include provided age and older",
+                        age = askSelectOptionQuestion(
+                            question=f"Enter the age to filter, output will include provided age and older",
                             min=1,
                             max=120,
                         )
-                    if filter_countries:
-                        countries_index = selectOptionQuestion(
-                            question=f"Enter the index of the column to check the countries.",
+                        current_year = datetime.now().year
+
+                    if filter_values:
+                        names_index = askSelectOptionQuestion(
+                            question=f"Enter the index of the column containing the values you want to filter.",
                             min=1,
                             max=len(all_columns),
                         )
-                        valid_countries = ["US", "USA"]  # List of valid country values
-                    if filter_names:
-                        names_index = selectOptionQuestion(
-                            question=f"Enter the index of the column containing the country.",
-                            min=1,
-                            max=len(all_columns),
+                        reference_json_file_path = getFilePath(
+                            "Enter the file containing the common names: ",
+                            (".json"),
+                            False,
                         )
+                        common_values = readJSON(reference_json_file_path)
+
                 process_config = {
                     "current_year": current_year,
-                    "common_names": common_names,
+                    "common_values": common_values,
                     "dob_column": None if filter_age else all_columns[dob_index - 1],
                     "age_value": age,
-                    "names_header": None
-                    if filter_names
+                    "common_value_header": None
+                    if filter_values
                     else all_columns[names_index - 1],
-                    "countries_header": None
-                    if filter_countries
-                    else all_columns[countries_index - 1],
-                    "valid_countries": valid_countries,
                 }
                 df = processCSVInChunks(
                     input_full_path,

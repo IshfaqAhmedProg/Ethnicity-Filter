@@ -80,7 +80,9 @@ def splitColumnValues(chunk, config):
 # D:\Downloads\MGM_Grand_Hotels1
 async def main():
     app_name = "SplitToMultipleColumns"
-    print("\nSplit names or addresses from one column to multiple columns.\n")
+    print(
+        "\nSplit names or addresses from one column to multiple columns. Before you run this make sure to have the input files in one folder.\n"
+    )
     # Initialising Logger
     logger = initLogging(app_name)
     # User inputs

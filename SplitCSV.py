@@ -65,10 +65,10 @@ async def main():
         "\nEnter the input files location: ",
     )
     output_dir = getFilePath(
-        "\nEnter the output location: ",
+        "Enter the output location: ",
     )
     chunk_size = 100000
-    progress = ProgressSaver(app_name)
+    # Ask for split type and set selected type to the name
     split_types = [
         {
             "name": "Column Values",
@@ -81,13 +81,15 @@ async def main():
     ]
     for idx, types in enumerate(split_types):
         print(f"\n[{idx+1}]=> {types['name']} :\n    {types['desc']}")
-
     split_type_index = selectOptionQuestion(
         "\nSelect the type of split you want to do on the input files",
         1,
         len(split_types),
     )
     selected_split_type = split_types[split_type_index - 1]["name"]
+    loggingHandler(logger, f"Type Selected: {selected_split_type}")
+
+    progress = ProgressSaver(app_name)
     # If saved_data length more than 0 ask users if they want to continue previous process
     if len(progress.saved_data) > 0:
         continue_from_before = askYNQuestion("\nContinue from before?(y/n)")
@@ -98,7 +100,7 @@ async def main():
     input_files = listDir(input_dir, get="files")
     input_files_and_headers = askHeaderForMultipleCSV(input_files, input_dir)
 
-    loggingHandler(logger, f"Type Selected: {selected_split_type}")
+    # Final user inputs required for Reference File Columns split type
     if selected_split_type == "Reference File Columns":
         common_vals_path = getFilePath(
             message="\nEnter the path to the reference file containing the common values: ",
@@ -111,16 +113,21 @@ async def main():
             encoding_errors="ignore",
             on_bad_lines="skip",
         ).to_dict(orient="list")
-    # Start the process on each input directory files
+
+    # Start the process on each input files and headers
     tick = time.time()
     for input_file_and_header in input_files_and_headers:
         task_tick = time.time()
+
+        # Initialising Process for file
         input_full_path = input_file_and_header[0]
         input_col = input_file_and_header[1]
         input_file = os.path.basename(input_full_path)
+
         # Check saved_data for file
         if input_full_path not in progress.saved_data:
             try:
+                # Switch based on the split type selected
                 match selected_split_type:
                     case "Column Values":
                         process_config = {

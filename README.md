@@ -1,6 +1,17 @@
 # Large Dataset Tools
 
-### 1. SplitCSV
+   Tools created in python to manipulate and analyse large datasets.
+
+- [Large Dataset Tools](#large-dataset-tools)
+  - [Split CSV](#split-csv)
+  - [Split To Multiple Columns](#split-to-multiple-columns)
+  - [Join Multiple CSV](#join-multiple-csv)
+  - [Filter ACN](#filter-acn)
+  - [Remove Columns](#remove-columns)
+  - [Remove Null Values](#remove-null-values)
+  - [Reorder Columns](#reorder-columns)
+
+## Split CSV
 
    Split CSV allows you to split one csv to multiple csvs, it has two modes that you can split in, **Column Values** and **Reference File Columns**.
 
@@ -61,7 +72,7 @@
                      | ----- | ------- | --------- | ---------- |
                      | fo    | fobar   | fo@bar.fo | Plumber    |
                      
-### 2. SplitToMultipleColumns
+## Split To Multiple Columns
 
    Split to Multiple Columns allows you to split one column based on the type of the value to multiple columns. The types of split possible are:
 
@@ -73,7 +84,7 @@
    
       Converts values like `{address : "Boron CA US 93516"}` to 4 columns, `{city : "Boron", state : "CA", country : "US", zip : "93516"}`
 
-### 3. JoinMultipleCSV
+## Join Multiple CSV
 
    Join multiple CSV files based on the column provided, Before running this, make sure you have the files you want to join to (***left***) in one folder, and the files you want to join with (***right***) in another folder.
    The ***left*** will be kept as is and only the new columns from the ***right*** will be added to it. You can have multiple ***left***  and ***right*** files, with completely different column headers.
@@ -118,11 +129,11 @@
                | diane | 1234    | diane@gmail.com |         |             |
 
                
-### 4. FilterACN
+## Filter ACN
 
    Filter out the age country or names from a csv file ***WIP***
 
-### 5. RemoveColumns
+## Remove Columns
 
    Remove columns that you need to specify on a .json file 
    
@@ -149,7 +160,7 @@
 
    **Make sure to check for commas and quotes in the .json file*.
 
-### 6. RemoveNullValues
+## Remove Null Values
 
    Remove null values from columns that you need to specify on a .json file, for multiple columns, the row is removed only when all of the specified column values are null 
    
@@ -176,7 +187,7 @@
    **Make sure to check for commas and quotes in the .json file*.
 
 
-### 7. ReorderColumns
+## Reorder Columns
 
    Reorder the columns of any csv files based on the columns specified on the .json file, The order of the array in the .json file is the order of the columns on the output file. Any column not specified will be dropped.
 

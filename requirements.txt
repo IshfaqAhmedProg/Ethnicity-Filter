@@ -1,5 +1,6 @@
 about-time==4.2.1
 alive-progress==3.1.4
+chardet==5.2.0
 grapheme==0.6.0
 numpy==1.25.2
 pandas==2.0.3

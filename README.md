@@ -9,6 +9,7 @@
   - [Remove Columns](#remove-columns)
   - [Remove Null Values](#remove-null-values)
   - [Reorder Columns](#reorder-columns)
+  - [Change Encoding](#change-encoding)
 
 ## Introduction
 
@@ -217,3 +218,7 @@
                      | foo@bar.fo | foobar | foo     | Plumber    |
                      | faa@bar.fa | faabar | faa     | Carpenter  |
                      | fo@bar.fo  | fobar  | fo      | Plumber    |
+
+## Change Encoding
+
+   Change the encoding of the files in the input directory to utf-8, any illegal character will be replaced with a "`?`". 

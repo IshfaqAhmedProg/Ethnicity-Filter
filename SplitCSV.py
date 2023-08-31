@@ -62,10 +62,10 @@ async def main():
 
     # User inputs
     input_dir = getFilePath(
-        "Enter the input files location: ",
+        "\nEnter the input files location: ",
     )
     output_dir = getFilePath(
-        "Enter the output location: ",
+        "\nEnter the output location: ",
     )
     chunk_size = 100000
     progress = ProgressSaver(app_name)
@@ -76,21 +76,21 @@ async def main():
         },
         {
             "name": "Reference File Columns",
-            "desc": "Splits to multiple folder based on the column name in the reference file",
+            "desc": "Splits to multiple folder based on the column name in the reference file.\n    *Requires a reference file which has values to match.",
         },
     ]
     for idx, types in enumerate(split_types):
-        print(f"[{idx+1}]=> {types['name']} :\n    {types['desc']} ")
+        print(f"\n[{idx+1}]=> {types['name']} :\n    {types['desc']}")
 
     split_type_index = selectOptionQuestion(
-        "Select the type of split you want to do on the input files",
+        "\nSelect the type of split you want to do on the input files",
         1,
         len(split_types),
     )
     selected_split_type = split_types[split_type_index - 1]["name"]
     # If saved_data length more than 0 ask users if they want to continue previous process
     if len(progress.saved_data) > 0:
-        continue_from_before = askYNQuestion("Continue from before?(y/n)")
+        continue_from_before = askYNQuestion("\nContinue from before?(y/n)")
         if not continue_from_before:
             progress.resetSavedData(logger)
 
@@ -101,7 +101,7 @@ async def main():
     loggingHandler(logger, f"Type Selected: {selected_split_type}")
     if selected_split_type == "Reference File Columns":
         common_vals_path = getFilePath(
-            message="Enter the path to the reference file containing the common values: ",
+            message="\nEnter the path to the reference file containing the common values: ",
             endswith=tuple(".csv"),
             folder=False,
         )

@@ -56,6 +56,10 @@ def splitOnColumnValues(df: DataFrame, props: Any):
         group.to_csv(
             output_file, mode="a", header=not os.path.exists(output_file), index=False
         )
+        loggingHandler(
+            logger=props["logger"],
+            log_mssg=f"Saved {len(group)} records to {output_file}",
+        )
 
 
 # Main function

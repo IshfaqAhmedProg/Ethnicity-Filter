@@ -68,9 +68,9 @@ def splitColumnValues(chunk, config):
         # Drop the original 'name' column
         chunk.drop(columns=[config["split_name_column"]], inplace=True)
 
-    # Rename fucked up header names
-    new_column_names = {"t": "phoneNumber", "dob": "dateOfBirth", "e": "email"}
-    chunk.rename(columns=new_column_names, inplace=True)
+    # # Rename fucked up header names
+    # new_column_names = {"t": "phoneNumber", "dob": "dateOfBirth", "e": "email"}
+    # chunk.rename(columns=new_column_names, inplace=True)
 
     return chunk
 

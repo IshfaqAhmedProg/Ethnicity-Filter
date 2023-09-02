@@ -27,7 +27,12 @@ def splitOnReferenceColumns(chunk: DataFrame, process_config: Any):
             category_dir = os.path.join(process_config["output_dir"], category)
             createDirectory(category_dir)
             output_file = os.path.join(category_dir, process_config["input_file"])
-            filtered_data.to_csv(output_file, index=False)
+            filtered_data.to_csv(
+                output_file,
+                mode="a",
+                header=not os.path.exists(output_file),
+                index=False,
+            )
             loggingHandler(
                 logger=process_config["logger"],
                 log_mssg=f"Saved {len(filtered_data)} records to {output_file}",

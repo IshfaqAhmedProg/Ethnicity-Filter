@@ -31,7 +31,7 @@ def appendCSVFiles(directory_path, output_file_path, logger, chunk_size=1000):
     # Loop through each CSV file and append its contents to the output file
     with open(output_file_path, "wb") as output_file:
         for csv_file in progressBarIterator(
-            iterable=csv_files, description=f"Appending {csv_file}"
+            iterable=csv_files,
         ):
             for chunk in pd.read_csv(csv_file, chunksize=chunk_size):
                 if not header_written:

@@ -43,7 +43,9 @@ async def main():
     )
     createDirectory(output_dir)
     check_cols_path = getFilePath(
-        "Enter the .json file containing the columns to reorder: ", (".json"), False
+        "Enter the .json file containing the columns to remove nulls from: ",
+        (".json"),
+        False,
     )
     chunk_size = 100000
     progress = ProgressSaver(app_name)

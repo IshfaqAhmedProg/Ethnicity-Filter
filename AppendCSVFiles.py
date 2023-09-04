@@ -21,7 +21,7 @@ def appendCSVFiles(directory_path, output_file_path, logger, chunk_size=1000):
     # Find all CSV files in the given directory
     csv_files = glob.glob(os.path.join(directory_path, "*.csv"))
 
-    if not csv_files:
+    if len(csv_files) == 0:
         print("No CSV files found in the directory.")
         return
 

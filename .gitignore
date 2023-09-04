@@ -8,3 +8,7 @@ saves
 *.save.json
 *_logs
 *_saves
+build
+dist
+*.spec
+buildScripts

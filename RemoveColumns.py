@@ -45,12 +45,9 @@ async def main():
     )
     chunk_size = 100000
     progress = ProgressSaver(app_name)
+    progress.askToContinue(logger)
 
     del_cols = readJSON(del_cols_path)
-    if len(progress.saved_data) > 0:
-        continue_from_before = askYNQuestion("Continue from before?(y/n)")
-        if not continue_from_before:
-            progress.resetSavedData(logger)
     # Get the list of input directory files.
     input_files = listDir(input_dir, get="files")
 

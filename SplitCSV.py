@@ -100,10 +100,7 @@ async def main():
 
     progress = ProgressSaver(app_name)
     # If saved_data length more than 0 ask users if they want to continue previous process
-    if len(progress.saved_data) > 0:
-        continue_from_before = askYNQuestion("\nContinue from before?(y/n)")
-        if not continue_from_before:
-            progress.resetSavedData(logger)
+    progress.askToContinue(logger)
 
     # Get the list of input directory files.
     input_files = listDir(input_dir, get="files")

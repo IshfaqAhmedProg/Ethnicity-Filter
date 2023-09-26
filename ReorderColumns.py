@@ -46,10 +46,8 @@ async def main():
     progress = ProgressSaver(app_name)
 
     reorder_cols = readJSON(reorder_cols_path)
-    if len(progress.saved_data) > 0:
-        continue_from_before = askYNQuestion("Continue from before?(y/n)")
-        if not continue_from_before:
-            progress.resetSavedData(logger)
+    progress.askToContinue(logger)
+
     # Get the list of input directory files.
     input_files = listDir(input_dir, get="files")
 

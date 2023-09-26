@@ -1,7 +1,7 @@
 import os
 from traceback import format_exc
 
-from pandas import json_normalize
+from pandas import read_json, concat
 from pypeepa import (
     getFilePath,
     initLogging,
@@ -11,30 +11,27 @@ from pypeepa import (
     ProgressSaver,
 )
 import time
-import json
 
 
-def convertJSONToCSV(input_file, output_file):
-    # Open the JSON file for reading
-    with open(input_file, "r") as json_file:
-        # Initialize an empty list to store the parsed JSON data
-        json_data = []
+def convertJSONToCSV(input_file, output_file, chunksize):
+    # Initialize a JSON file iterator
+    json_iterator = read_json(
+        input_file, lines=True, chunksize=chunksize
+    )  # Adjust the chunk size as needed
 
-        # Iterate through each line in the JSON file
-        for line in json_file:
-            # Parse each line as JSON and append it to the list
-            try:
-                json_line = json.loads(line)
-                json_data.append(json_line)
-            except json.JSONDecodeError as e:
-                # Handle JSON decoding errors if necessary
-                print(f"Error decoding JSON: {e}")
+    # Initialize an empty list to store the DataFrames
+    dfs = []
 
-    # Convert the list of JSON data to a Pandas DataFrame
-    df = json_normalize(json_data)
+    # Process each chunk and append it to the list
+    for chunk in json_iterator:
+        # Append the chunk to the list
+        dfs.append(chunk)
 
-    # Save the DataFrame to a CSV file
-    df.to_csv(output_file, index=False)
+    # Concatenate all chunks into a single DataFrame
+    final_df = concat(dfs, ignore_index=True)
+
+    # Save the final DataFrame to a CSV file
+    final_df.to_csv(output_file, index=False)
 
 
 # Main function
@@ -55,7 +52,7 @@ async def main():
 
     # Initialise progress saver
     progress = ProgressSaver(app_name)
-
+    chunksize = 10000
     # If saved_data length more than 0 ask users if they want to continue previous process
     progress.askToContinue(logger)
 
@@ -72,7 +69,7 @@ async def main():
             try:
                 # Output the file to output folder with same name.
                 output_path = os.path.join(output_dir, input_file)
-                convertJSONToCSV(input_full_path, output_path)
+                convertJSONToCSV(input_full_path, output_path, chunksize)
                 loggingHandler(
                     logger,
                     f"Results for {input_file}, Time taken:{time.time()-task_tick}s -> {output_path}",

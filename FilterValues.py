@@ -16,6 +16,7 @@ from pypeepa import (
     listDir,
     printArray,
     askSelectOptionQuestion,
+    askHeaderForMultipleCSV,
 )
 
 
@@ -39,7 +40,7 @@ def filterDataFrameByAgeAndCommonValues(chunk: DataFrame, process_config: dict):
             @key:`age_value` (int or None): Minimum age for filtering.\n
             @key:`common_values` (list or None): List of common values to filter by.\n
             @key:`common_value_header` (str or None): Column header for common values.\n
-
+            @key:`reverse_filter` (boolean or False): Remove the match and keep the non match
     @return:
         Filtered DataFrame containing rows that satisfy the age and common value criteria.
     """
@@ -49,6 +50,7 @@ def filterDataFrameByAgeAndCommonValues(chunk: DataFrame, process_config: dict):
         age_value,
         common_values,
         common_value_header,
+        reverse_filter,
     ) = process_config.values()
     # Setting all to true so that and logic can work so if multiple filters are chosen when both are satisfied then keep those only
     value_matches = filter_age = True
@@ -61,9 +63,13 @@ def filterDataFrameByAgeAndCommonValues(chunk: DataFrame, process_config: dict):
         filter_age = chunk["age"] > age_value
 
     # Filter values
-    if common_value_header != None:
+    if common_value_header is not None:
         common_values_lower = [name.lower() for name in common_values]
-        value_matches = chunk[common_value_header].str.lower().isin(common_values_lower)
+        value_matches = (
+            chunk[common_value_header].str.lower().isin(common_values_lower)
+            if not reverse_filter
+            else ~chunk[common_value_header].str.lower().isin(common_values_lower)
+        )
 
     filtered_df = chunk[filter_age & value_matches]
 
@@ -92,10 +98,20 @@ async def main():
     input_files = listDir(input_dir, "files")
 
     filter_age = askYNQuestion("Do you want to filter age?(y/n)")
-    filter_values = askYNQuestion("Do you want to filter names?(y/n)")
+    filter_values = askYNQuestion("Do you want to filter values?(y/n)")
     file_columns_same = askYNQuestion(
         "Are all the column names the same for all the files in the input dir?(y/n)"
     )
+    reverse_filter = askYNQuestion(
+        "Reverse filter: Remove the match and keep the non match?(y/n)"
+    )
+    # TODO Use this for loop to iterate files so that user doesnt have to keep repeating header values for each file
+    # input_files_value_headers=askHeaderForMultipleCSV(input_files, input_dir,"values")
+    # input_files_dob_headers=askHeaderForMultipleCSV(input_files, input_dir,"dob")
+    # for (value_header, filename), (dob_header, _) in zip(input_files_value_headers, input_files_dob_headers):
+    #     print(f'String 1: {value_header}, Filename: {filename}')
+    #     print(f'String 2: {dob_header}, Filename: {filename}')
+
     # Start the process on each input directory files
     tick = time.time()
     first_file = True
@@ -129,7 +145,7 @@ async def main():
                             max=len(all_columns),
                         )
                         reference_json_file_path = getFilePath(
-                            "Enter the file containing the common names: ",
+                            "Enter the file containing the common values: ",
                             (".json"),
                             False,
                         )
@@ -145,6 +161,7 @@ async def main():
                     "common_value_header": None
                     if not filter_values
                     else all_columns[names_index - 1],
+                    "reverse_filter": reverse_filter,
                 }
                 df = processCSVInChunks(
                     input_full_path,

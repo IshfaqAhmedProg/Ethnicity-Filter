@@ -9,29 +9,42 @@ from pypeepa import (
     listDir,
     createDirectory,
     ProgressSaver,
+    askSelectOptionQuestion,
+    countTotalRows,
 )
 import time
 
 
-def convertJSONToCSV(input_file, output_file, chunksize):
-    # Initialize a JSON file iterator
-    json_iterator = read_json(
-        input_file, lines=True, chunksize=chunksize
-    )  # Adjust the chunk size as needed
+def convertJSONToCSV(input_path, output_path, chunksize):
+    # Open the input JSON file for reading
+    with open(input_path, "r") as json_file:
+        # Initialize a CSV output file for writing
+        with open(f"{output_path}_chunk0.csv", "w") as csv_file:
+            header_written = False  # To ensure the header is written only once
 
-    # Initialize an empty list to store the DataFrames
-    dfs = []
+            # Process the JSON file line by line
+            for line_count, line in enumerate(json_file, 1):
+                # Load JSON data from the line
+                data = read_json(line, lines=True)
 
-    # Process each chunk and append it to the list
-    for chunk in json_iterator:
-        # Append the chunk to the list
-        dfs.append(chunk)
+                # Write the header row if it hasn't been written yet
+                if not header_written:
+                    header = data.columns.tolist()
+                    csv_file.write(",".join(header) + "\n")
+                    header_written = True
 
-    # Concatenate all chunks into a single DataFrame
-    final_df = concat(dfs, ignore_index=True)
+                # Write the data to the CSV file
+                data.to_csv(
+                    csv_file, header=False, index=False, mode="a", lineterminator="\n"
+                )
 
-    # Save the final DataFrame to a CSV file
-    final_df.to_csv(output_file, index=False)
+                # Check if it's time to create a new CSV file (chunk)
+                if line_count % chunksize == 0:
+                    csv_file.close()  # Close the current chunk
+                    chunk_number = line_count // chunksize
+                    new_output_file = f"{output_path}_chunk{chunk_number}.csv"
+                    csv_file = open(new_output_file, "w")  # Open a new chunk file
+                    header_written = False
 
 
 # Main function
@@ -50,6 +63,8 @@ async def main():
     )
     createDirectory(output_dir)
 
+    # Get the total lines in the file
+
     # Initialise progress saver
     progress = ProgressSaver(app_name)
     chunksize = 10000
@@ -58,6 +73,8 @@ async def main():
 
     # Get the list of input directory files.
     input_files = listDir(input_dir)
+
+    chunkify = False
 
     # Start the process on each input directory files
     tick = time.time()
@@ -68,6 +85,21 @@ async def main():
         if input_full_path not in progress.saved_data:
             try:
                 # Output the file to output folder with same name.
+                loggingHandler(
+                    logger, f"Counting total lines for {input_file}, please wait..."
+                )
+                total_lines_in_input = countTotalRows(input_full_path)
+                loggingHandler(
+                    logger, f"Found {total_lines_in_input} lines in {input_file}!"
+                )
+                if total_lines_in_input > 10000:
+                    chunkify = True
+                if chunkify:
+                    chunksize = askSelectOptionQuestion(
+                        "Output is too large and will be split to chunks, select the line count for each chunk:",
+                        100,
+                        1000000,
+                    )
                 output_path = os.path.join(output_dir, input_file)
                 convertJSONToCSV(input_full_path, output_path, chunksize)
                 loggingHandler(

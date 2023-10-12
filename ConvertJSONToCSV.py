@@ -1,7 +1,7 @@
 import os
 from traceback import format_exc
 
-from pandas import read_json, concat
+from pandas import read_json
 from pypeepa import (
     getFilePath,
     initLogging,
@@ -25,7 +25,7 @@ def convertJSONToCSV(input_path, output_path, chunksize):
             # Process the JSON file line by line
             for line_count, line in enumerate(json_file, 1):
                 # Load JSON data from the line
-                data = read_json(line, lines=True)
+                data = read_json(line, lines=True, encoding_errors="ignore")
 
                 # Write the header row if it hasn't been written yet
                 if not header_written:
@@ -35,7 +35,12 @@ def convertJSONToCSV(input_path, output_path, chunksize):
 
                 # Write the data to the CSV file
                 data.to_csv(
-                    csv_file, header=False, index=False, mode="a", lineterminator="\n"
+                    csv_file,
+                    header=False,
+                    index=False,
+                    mode="a",
+                    lineterminator="\n",
+                    errors="ignore",
                 )
 
                 # Check if it's time to create a new CSV file (chunk)

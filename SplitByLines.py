@@ -51,7 +51,9 @@ async def main():
     )
     createDirectory(output_dir)
 
+    loggingHandler(log_mssg="Counting lines please wait...")
     total_lines = countTotalRows(input_file)
+    loggingHandler(logger, f"Total lines found:{total_lines}")
     max_lines = askSelectOptionQuestion(
         "Select the max no. of lines in each part", 1, total_lines
     )
@@ -60,22 +62,22 @@ async def main():
     try:
         # Check if the file exists
         if not os.path.exists(input_file):
-            loggingHandler(logger, f"File '{input_file}' does not exist.")
-            return
+            raise Exception(f"File '{input_file}' does not exist.")
 
         # Check if the file is a regular file
         if not os.path.isfile(input_file):
-            loggingHandler(logger, f"'{input_file}' is not a regular file.")
-            return
+            raise Exception(f"'{input_file}' is not a regular file.")
 
         # Detect the file's encoding
+        loggingHandler(log_mssg="Checking encoding of the file, please wait...")
         file_encoding = checkEncoding(input_file)
 
         if not file_encoding:
-            loggingHandler(logger, f"Unable to detect the encoding for '{input_file}'.")
-            return
+            raise Exception(f"Unable to detect the encoding for '{input_file}'.")
+        else:
+            loggingHandler(logger, f"Encoding of the file is:{file_encoding}")
 
-        # Create a directory to store the split files
+        # Start the splitting process
         splitByLines(input_file, output_dir, max_lines, file_encoding, total_lines)
     except Exception as err:
         traceback_info = format_exc()

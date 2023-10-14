@@ -51,7 +51,7 @@ async def main():
     )
     createDirectory(output_dir)
 
-    loggingHandler(log_mssg="Counting lines please wait...")
+    loggingHandler(None, "Counting lines please wait...")
     total_lines = countTotalRows(input_file)
     loggingHandler(logger, f"Total lines found:{total_lines}")
     max_lines = askSelectOptionQuestion(
@@ -69,7 +69,7 @@ async def main():
             raise Exception(f"'{input_file}' is not a regular file.")
 
         # Detect the file's encoding
-        loggingHandler(log_mssg="Checking encoding of the file, please wait...")
+        loggingHandler(None, "Checking encoding of the file, please wait...")
         file_encoding = checkEncoding(input_file)
 
         if not file_encoding:

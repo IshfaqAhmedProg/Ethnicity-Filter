@@ -50,14 +50,17 @@ async def main():
         "Enter the output location: ",
     )
     createDirectory(output_dir)
-
+    # Get the total lines and ask user to select max_lines
     loggingHandler(None, "Counting lines please wait...")
+    count_line_tick = time.time()
     total_lines = countTotalRows(input_file)
-    loggingHandler(logger, f"Total lines found:{total_lines}")
+    loggingHandler(
+        logger, f"Total lines found:{total_lines} -> {time.time()-count_line_tick}s"
+    )
     max_lines = askSelectOptionQuestion(
         "Select the max no. of lines in each part", 1, total_lines
     )
-
+    # Main process
     task_tick = time.time()
     try:
         # Check if the file exists
